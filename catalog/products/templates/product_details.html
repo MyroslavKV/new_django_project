@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load math_filters %}
+{% block content %}
+<div class="container my-3">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ product.image_path|default:'https://cdn-icons-png.flaticon.com/512/3225/3225196.png' }}"/>
+        </div>
+        <div class="col-md-6">
+            <h5>{{product.name}}</h5>
+            {% if not product.available %}
+            <span class="text-muted d-block mt-1">Not available</span>
+            {% else %}
+            <span class="text-success d-block mt-1">Available ({{product.stock}})</span>
+            {% endif %}
+
+            {% if product.discount %}
+            <span class="text-success">
+                {{ product.price|calculate_discount:product.discount}}₴
+            </span>
+            <span class="text-muted text-decoration-line-through">
+                {{product.price}}₴
+            </span>
+            {% else %}
+                <span class="">
+                    {{product.price}}₴
+                </span>
+            {% endif %}
+            
+            <h5>Nomenclature:{{product.nomenclature}}</h5>
+
+            <div class="rating">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= product.rating %}
+                        <i class="bi bi-star-fill text-warning"></i>
+                    {% else %}
+                        <i class="bi bi-star text-muted"></i>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <h5>Category:{{product.category.name}}</h5>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.descrition %}
+                <p>Description:{{product.description}}</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <table class="table table-bordered">
+                {% for key, value in product.attributes.items %}
+                <tr>
+                    <th>
+                        {{key}}
+                    </th>
+                    <td>
+                        {{value}}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

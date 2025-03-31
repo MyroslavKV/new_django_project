@@ -1,11 +1,58 @@
 {% extends "base.html" %}
-
+{% load math_filters %}
 {% block content %}
-    <h1>
-        каталог продуктів
-    </h1>
-    <p>
-        скоро буде
-    </p>
-{% endblock %}
+    <h1>Product list</h1>
+    {% if products|length > 0 %}
+    <p class="mt-3">Found {{ products|length }} products</p>
+    {% else %}
+        <p class="mt-3 text-muted">No products found</p>
+    {% endif %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for product in products %} 
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img
+                    src="{{ product.image_path|default:'https://cdn-icons-png.flaticon.com/512/3225/3225196.png' }}"
+                    alt="{{product.name}}"
+                    class="card-img-top"
+                    style="width: 30px; height: 30px"
+                />
+                <div class="rating">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= product.rating %}
+                            <i class="bi bi-star-fill text-warning"></i>
+                        {% else %}
+                            <i class="bi bi-star text-muted"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="card-body">
+                    <div class="card-body">
+                        <h5 class="card-title">{{product.name}}</h5>
+                    </div>
+                    {% if product.discount %}
+                        <span class="text-success">
+                            {{ product.price|calculate_discount:product.discount}}₴
+                        </span>
+                        <span class="text-muted text-decoration-line-through">
+                            {{product.price}}₴
+                        </span>
+                        
+                    {% else %}
+                        <span class="">
+                            {{product.price}}₴
+                        </span>
+                    {% endif %}
 
+                    {% if not product.available %}
+                    <span class="text-muted d-block mt-1">Not available</span>
+                    {% else %}
+                    <span class="text-success d-block mt-1">Available</span>
+                    {% endif %}
+                    <a class="btn btn-primary" href="{% url 'product_details' product.id%}">More</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
