@@ -3,6 +3,7 @@
 {% block content %}
     <h2>Profile</h2>
     <ul>
+        <img src="{{ profile.avatar.url }}" alt="avatar" width="150px">
         <li>
             Username: {{ request.user.username }}
         </li>
@@ -10,5 +11,6 @@
             Email: {{ request.user.email }}
         </li>
         <a href="{% url 'accounts:password_change' %}">Change password</a>
+        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">Edit profile</a>
     </ul>
 {% endblock %}
