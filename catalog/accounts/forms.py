@@ -31,4 +31,8 @@ class ProfileUpdateForm(forms.Form):
         if self.user:
             self.fields["email"].initial = self.user.email
     
+class RegisterFormWithoutCaptcha(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
     

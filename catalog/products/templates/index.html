@@ -50,6 +50,7 @@
                     <span class="text-success d-block mt-1">Available</span>
                     {% endif %}
                     <a class="btn btn-primary" href="{% url 'product_details' product.id%}">More</a>
+                    <a class="btn btn-primary" href="{% url 'cart_add' product.id%}">Add to your cart</a>
                 </div>
             </div>
         </div>

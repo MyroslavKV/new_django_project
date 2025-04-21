@@ -8,20 +8,38 @@ from django.core.mail import send_mail
 from django.http import HttpResponseBadRequest
 
 from accounts.models import Profile
-from accounts.forms import RegisterForm, ProfileUpdateForm
+from accounts.forms import RegisterForm, ProfileUpdateForm, RegisterFormWithoutCaptcha
 
 
 
 def register(request):
-    if request.method == "POST":
+    if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("index")
+            email = form.cleaned_data['email']
+            if User.objects.filter(email=email).exists():
+                form.add_error('email', 'This email is already taken')
+            else:
+                request.session['register_form_data'] = request.POST.dict()
+
+                confirm_url = request.build_absolute_uri(
+                    reverse("accounts:confirm_email")
+                ) + f"?email={email}"
+                send_mail(
+                    subject="Confirm Your Email",
+                    message=f"Hi! To complete registration, click the link: {confirm_url}",
+                    from_email="noreply@gmail.com",
+                    recipient_list=[email],
+                    fail_silently=False
+                )
+
+                messages.info(request, "Confirmation email sent to your inbox!")
+                return redirect("accounts:register")
     else:
-            form = RegisterForm()
+        form = RegisterForm()
+
     return render(request, "register.html", {"form": form})
+
 
 def login_view(request):
     if request.method == "POST":
@@ -74,23 +92,25 @@ def edit_profle_view(request):
     return render(request, "edit_profile.html", {"form": form})
 
 def confirm_email_view(request):
-    user_id = request.GET.get("user")
     email = request.GET.get("email")
-    
-    if not user_id or not email:
-        return HttpResponseBadRequest("Bad request. Missing user or email")
-    
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        return HttpResponseBadRequest("User not found")
-    
-    if User.objects.filter(email=email).exists():
-        return HttpResponseBadRequest("This email is already used")
-    
-    user.email = email
-    user.save()
-    
-    return render(request, "confirm_email.html", {"new_mail": email})
+    if not email:
+        return HttpResponseBadRequest("No email provided")
 
+    if User.objects.filter(email=email).exists():
+        return HttpResponseBadRequest("This email is already taken")
+
+    form_data = request.session.get('register_form_data')
+    if not form_data:
+        return HttpResponseBadRequest("No registration data found")
+
+    form_data['email'] = email
+
+    form = RegisterFormWithoutCaptcha(form_data)
+    if form.is_valid():
+        user = form.save()
+        login(request, user)
+        del request.session['register_form_data']
+        return render(request, "confirm_email.html", {"email": email})
+    else:
+        return HttpResponseBadRequest("Invalid form data")
 

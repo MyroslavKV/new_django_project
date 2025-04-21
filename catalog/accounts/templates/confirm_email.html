@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="alert alert-success text-center">
-    <h2>Email uptated!</h2>
-    <p>New email: <strong>{{ new_mail }}</strong></p>
-    <a href="{% url 'accounts:profile' %}" class="btn btn-primary">Back to profile</a>
-</div>
+    <div class="container mt-5">
+        <h2>Email Confirmed</h2>
+        <p>Your email <strong>{{ new_mail }}</strong> has been successfully confirmed.</p>
+        <a href="{% url 'login' %}" class="btn btn-success">Login now</a>
+    </div>
 {% endblock %}
