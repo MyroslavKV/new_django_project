@@ -63,7 +63,7 @@ def cart_add(request, product_id):
             cart[product_id] = 1     
         request.session[settings.CART_SESSION_ID] = cart
     else:
-        cart = Cart.objects.get_or_create(user=request.user)
+        cart, created = Cart.objects.get_or_create(user=request.user)
         cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
         if not created:
             cart_item.amount += 1
@@ -92,6 +92,42 @@ def cart_detail_view(request):
             cart_items = []
             total_price = 0
         else:
-            cart_items = cart.items.select_related("product").all
+            cart_items = cart.items.select_related("product").all()
             total_price = sum(item.product.price * item.amount for item in cart_items)
     return render(request=request, template_name="cart_detail.html", context={"cart_items" : cart_items, "total_price" : total_price})
+
+def remove_from_cart(request):
+    if request.method == "POST":
+        product_id = request.POST.get('product_id')
+        
+        if not request.user.is_authenticated:
+            cart = request.session.get(settings.CART_SESSION_ID, dict())
+            if product_id in cart:
+                del cart[product_id]
+            request.session[settings.CART_SESSION_ID] = cart
+        else:
+            cart = request.user.cart
+            cart_item = CartItem.objects.filter(cart=cart, product_id=product_id).first()
+            if cart_item:
+                cart_item.delete()
+        
+        return redirect('cart_detail')
+
+def update_cart_item_quantity(request):
+    if request.method == "POST":
+        product_id = request.POST.get('product_id')
+        amount = int(request.POST.get('amount'))
+        
+        if not request.user.is_authenticated:
+            cart = request.session.get(settings.CART_SESSION_ID, dict())
+            if product_id in cart:
+                cart[product_id] = amount 
+            request.session[settings.CART_SESSION_ID] = cart
+        else:
+            cart = request.user.cart
+            cart_item = CartItem.objects.filter(cart=cart, product_id=product_id).first()
+            if cart_item:
+                cart_item.amount = amount
+                cart_item.save()
+
+        return redirect('cart_detail')
