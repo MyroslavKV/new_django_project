@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Order checkout</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{form.as_p}}
+        <imput type="submit" value="Complete order" class="btn btn-primary">Complete order</imput>
+    </form>
+{% endblock %}

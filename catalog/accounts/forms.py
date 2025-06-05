@@ -4,10 +4,12 @@ from django.core.exceptions import ValidationError
 from django import forms
 from captcha.fields import CaptchaField
 
+from serializers.forms_serializer import CaptchaFieldSerializer
+
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
-    captcha = CaptchaField()
+    captcha = CaptchaFieldSerializer()
     
     class Meta:
         model = User
@@ -35,4 +37,8 @@ class RegisterFormWithoutCaptcha(UserCreationForm):
     class Meta:
         model = User
         fields = ("username", "email", "password1", "password2")
+
+class LoginForm(forms.Form):
+    username = forms.CharField(required=True, label="Login:")
+    password = forms.PasswordInput()
     
