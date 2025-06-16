@@ -1,6 +1,5 @@
 import pytest
 
-from accounts.models import Profile
 from products.models import Cart, Product, Category, CartItem, Order, OrderItem
 from .fixtures import product, product_with_discount, order, category
 
@@ -100,48 +99,76 @@ def test_cart_model_diffrent_products(user, product_with_discount, product):
     assert cart.total == expected_total
 
 @pytest.mark.django_db
-def test_order_model_one_item(order, product):
-    OrderItem.objects.filter(order=order).delete()
-    order_item = OrderItem.objects.create(
-        order=order, product=product, price=product.price, amount=1
+def test_order_creation(user):
+    order = Order.objects.create(
+        user=user,
+        contact_name="John Doe",
+        contact_email="john@example.com",
+        contact_phone="+380123456789",
+        address="Kyiv, Ukraine"
     )
-
-    assert order_item.amount == 1
-    assert order_item.item_total == product.price
-
+    assert order.status == Order.Status.NEW
+    assert order.is_paid is False
+    assert str(order).startswith("Order №:")
 
 @pytest.mark.django_db
-def test_order_model_multiple_items(order, product):
-    OrderItem.objects.filter(order=order).delete()
-    order_item = OrderItem.objects.create(
-        order=order, product=product, amount=AMOUNT, price=product.price
+def test_order_total_price(user, product):
+    order = Order.objects.create(
+        user=user,
+        contact_name="Jane Doe",
+        contact_email="jane@example.com",
+        contact_phone="+380987654321",
+        address="Lviv, Ukraine"
     )
 
-    assert order_item.amount == AMOUNT
-    assert order_item.item_total == product.price * AMOUNT
+    assert order.total_price == 0
 
+    item = OrderItem.objects.create(
+        order=order,
+        product=product,
+        amount=2,
+        price=product.price
+    )
+
+    expected_total = item.amount * item.price
+    assert order.total_price == expected_total
 
 @pytest.mark.django_db
-def test_order_model_discount_item(order, product_with_discount):
-    OrderItem.objects.filter(order=order).delete()
-    order_item = OrderItem.objects.create(
-        order=order, product=product_with_discount, price=product_with_discount.price, amount=1
+def test_order_multiple_items_total(user, product, product_with_discount):
+    order = Order.objects.create(
+        user=user,
+        contact_name="Test User",
+        contact_email="testuser@example.com",
+        contact_phone="+380111222333",
+        address="Odesa, Ukraine"
     )
 
-    assert order_item.item_total == product_with_discount.discount_price
+    item1 = OrderItem.objects.create(
+        order=order,
+        product=product,
+        amount=1,
+        price=product.price
+    )
+    item2 = OrderItem.objects.create(
+        order=order,
+        product=product_with_discount,
+        amount=3,
+        price=product_with_discount.discount_price
+    )
 
+    expected_total = (item1.amount * item1.price) + (item2.amount * item2.price)
+    assert order.total_price == expected_total
 
 @pytest.mark.django_db
-def test_order_model_different_items(order, product_with_discount, product):
-    OrderItem.objects.filter(order=order).delete()
-
-    order_item_1 = OrderItem.objects.create(
-        order=order, product=product, price=product.price, amount=1
+def test_order_status_choices(user):
+    order = Order.objects.create(
+        user=user,
+        contact_name="Status Test",
+        contact_email="status@example.com",
+        contact_phone="+380000000000",
+        address="Kharkiv, Ukraine",
+        status=Order.Status.PROCESSING,
+        is_paid=True
     )
-
-    order_item_2 = OrderItem.objects.create(
-        order=order, product=product_with_discount, price=product_with_discount.price, amount=1
-    )
-
-    expected_total = order_item_1.item_total + order_item_2.item_total
-    assert expected_total == product.price + product_with_discount.discount_price
+    assert order.status == Order.Status.PROCESSING
+    assert order.is_paid is True
