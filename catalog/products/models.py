@@ -22,7 +22,7 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=0)
     price = models.DecimalField(max_digits=7, decimal_places=2)
     description = models.TextField(null=True, blank=True)
-    discount = models.IntegerField(default=0, max=100)
+    discount = models.IntegerField(default=0)
     available = models.BooleanField(default=True)
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name="products"
@@ -34,12 +34,13 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     rating = models.FloatField(default=0.0)
-    attributes = models.JSONField()
+    attributes = models.JSONField(default=dict, blank=True)
 
     @property
     def discount_price(self):
         if self.discount:
             return round(self.price - (self.price * self.discount / 100), 2)
+        return float(self.price)
 
     @property
     def has_discount(self):
@@ -51,7 +52,8 @@ class Product(models.Model):
         unique_together = ["name", "nomenclature"]
 
     def __str__(self):
-        return self.name, self.nomenclature
+        return f"{self.name} ({self.nomenclature})"
+
 
 
 class Order(models.Model):

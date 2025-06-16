@@ -1,4 +1,10 @@
 import os 
-import django
+import pytest
+from django.contrib.auth.models import User
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "catalog"".settings")
+
+@pytest.fixture
+def user():
+    return User.objects.create_user(
+        username='test_user_super', 
+        password='password_user_super')

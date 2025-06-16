@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from catalog.products.forms import OrderCreateForm
@@ -10,6 +11,18 @@ from models import Cart, CartItem, Product, Payment, Order
 from serializers.cart_serializers import CartItemSerializer, CartSerializer
 from serializers.product_serializers import ProductSerializer
 from utils.email.email import send_order_confirmation_email
+
+
+@extend_schema_view(
+    add=extend_schema(
+        summary="Add product to cart",
+        description="Adds a product to the user's cart or session cart."
+    ),
+    checkout=extend_schema(
+        summary="Checkout current cart",
+        description="Creates an order from the cart and processes the payment."
+    )
+)
 
 class CartViewSet(ViewSet):
     queryset = CartItem.objects.all()
