@@ -46,6 +46,10 @@ class Product(models.Model):
     def has_discount(self):
         return self.discount > 0
 
+    @property
+    def actual_price(self):
+        return self.discount_price if self.discount_price is not None else self.price
+
     class Meta:
         ordering = ["-created_at"]
         db_table = "products"
@@ -57,7 +61,7 @@ class Product(models.Model):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     contact_name = models.CharField(max_length=100)
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=20)
@@ -117,7 +121,7 @@ class CartItem(models.Model):
 
     @property
     def total_price(self):
-        return self.amount * self.product.price
+        return self.amount * self.product.actual_price
 
     class Meta:
         unique_together = ("cart", "product")

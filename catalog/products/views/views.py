@@ -6,8 +6,8 @@ from django.utils.timezone import make_aware
 from django.conf import settings
 from rest_framework import viewsets, filters
 
-from catalog.products.forms import OrderCreateForm
-from catalog.utils.email.email import send_order_confirmation_email
+from products.forms import OrderCreateForm
+from utils.email.email import send_order_confirmation_email
 
 from products.models import Payment, Product, Category, Cart, CartItem, OrderItem, Order
 

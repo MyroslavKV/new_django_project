@@ -1,4 +1,5 @@
 import pytest
+from decimal import Decimal
 
 from products.models import Cart, Product, Category, CartItem, Order, OrderItem
 from .fixtures import product, product_with_discount, order, category
@@ -33,8 +34,8 @@ def test_cart_model_one_product(user, product):
         amount=1,
     )
     
-    assert cart.total == product.price
-    assert cart_item.item_total == product.price
+    assert cart.total_price == product.price
+    assert cart_item.total_price == product.price
         
 @pytest.mark.django_db
 def test_cart_model_multiple_products(user, product):
@@ -47,8 +48,8 @@ def test_cart_model_multiple_products(user, product):
         amount=AMOUNT,
     )
     
-    assert cart.total == product.price * AMOUNT
-    assert cart_item.item_total == product.price * AMOUNT
+    assert cart.total_price == product.price * AMOUNT
+    assert cart_item.total_price == product.price * AMOUNT
     
 @pytest.mark.django_db
 def test_cart_model_discount_product(user, product_with_discount):
@@ -60,9 +61,11 @@ def test_cart_model_discount_product(user, product_with_discount):
         product=product_with_discount,
         amount=1,
     )
-    
-    assert cart.total == product_with_discount.discount_price
-    assert cart_item.item_total == product_with_discount.discount_price
+
+    expected_price = Decimal(str(product_with_discount.discount_price))
+
+    assert cart.total_price == expected_price
+    assert cart_item.total_price == expected_price
     
 @pytest.mark.django_db
 def test_cart_model_discount_multiple_products(user, product_with_discount):
@@ -74,29 +77,27 @@ def test_cart_model_discount_multiple_products(user, product_with_discount):
         product=product_with_discount,
         amount=AMOUNT,
     )
-    
-    assert cart.total == product_with_discount.discount_price * AMOUNT
-    assert cart_item.item_total == product_with_discount.discount_price * AMOUNT
-    
-@pytest.mark.django_db
-def test_cart_model_diffrent_products(user, product_with_discount, product):
-    cart, _ = Cart.objects.get_or_create(user=user)
-    CartItem.objects.filter(cart=cart).delete()
 
-    CartItem.objects.create(
-        cart=cart,
-        product=product_with_discount,
-        amount=1,
+    expected_price = Decimal(str(product_with_discount.discount_price)) * AMOUNT
+
+    assert cart.total_price == expected_price
+    assert cart_item.total_price == expected_price
+
+
+@pytest.mark.django_db
+def test_cart_model_different_products(user, product_discount, product):
+
+    cart_item = CartItem.objects.create(
+        cart=user.cart,
+        product=product_discount,
     )
-    
-    CartItem.objects.create(
-        cart=cart,
+
+    cart_item_2 = CartItem.objects.create(
+        cart=user.cart,
         product=product,
-        amount=1,
     )
-    
-    expected_total = product_with_discount.discount_price + product.price
-    assert cart.total == expected_total
+
+    assert user.cart.total == 190
 
 @pytest.mark.django_db
 def test_order_creation(user):

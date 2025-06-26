@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django import forms
 from captcha.fields import CaptchaField
 
-from serializers.forms_serializer import CaptchaFieldSerializer
+from accounts.serializers.forms_serializer import CaptchaFieldSerializer
 
 
 class RegisterForm(UserCreationForm):

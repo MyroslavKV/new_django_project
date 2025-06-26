@@ -2,8 +2,8 @@ from rest_framework import serializers
 from rest_framework.fields import DecimalField
 from drf_spectacular.utils import extend_schema_field
 
-from models import Order, OrderItem
-from serializers.product_serializers import ProductSerializer
+from products.models import Order, OrderItem
+from products.serializers.product_serializers import ProductSerializer
 
 
 

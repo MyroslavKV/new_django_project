@@ -3,21 +3,20 @@ from rest_framework.routers import DefaultRouter
 from .views.product import ProductViewSet
 from .views.category import CategoryViewSet
 
-from .views import index, about_us, product_details, cart_detail_view, cart_add, update_cart_item_quantity, remove_from_cart
+from products.views.views import index, product_details, cart_detail_view, cart_add, cart_delete, checkout
 
 app_name = 'products'
 router = DefaultRouter()
-router.register(r"products", viewset=ProductViewSet)
+router.register(r"products", viewset=ProductViewSet, basename="products")
 router.register(r"category", viewset=CategoryViewSet)
 
 urlpatterns = [
-    path('',index, name="index"),
-    path('about/',about_us, name="about"),
-    path('product/<int:product_id>/',product_details, name="product_details"),
-    path('cart_add/<int:product_id>/',cart_add, name="cart_add"),
-    path('cart_details/',cart_detail_view, name="cart_detail"),
-    path('update_cart_item/', update_cart_item_quantity, name="update_cart_item"), 
-    path('remove_from_cart/', remove_from_cart, name="remove_from_cart")
+    path('', index, name="index"),
+    path('pct/<int:product_id>/', product_details, name="product_details"),
+    path('cart_roduadd/<int:product_id>/', cart_add, name="cart_add"),
+    path('cart_details/', cart_detail_view, name="cart_detail"),
+    path('cart_delete/<int:product_id>/', cart_delete, name="cart_delete"),
+    path('checkout/', checkout, name="checkout"),
 ]
 
 urlpatterns += router.urls

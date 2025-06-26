@@ -6,7 +6,6 @@ from products.models import Product, Category
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = serializers.PrimaryKeyRelatedField(read_only=True)
     discount_price = serializers.SerializerMethodField()
 
     class Meta:
@@ -30,8 +29,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(OpenApiTypes.FLOAT)
     def get_discount_price(self, obj):
-        if obj.get("discount"):
+        if isinstance(obj, dict):
             return obj.get("discount_price")
+        return getattr(obj, "discount_price", None)
     
     def validate_price(self, value):
         if value < 0:
